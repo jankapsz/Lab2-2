@@ -20,9 +20,10 @@ namespace Szeminarium
 
 
         public float rotationX { get; set; } = 0;
+        public float rotationXDirection { get; set; } = 0;
 
         private float stopper = 0;
-
+        private double stopperTime = 0;
 
         internal void AdvanceTime(double deltaTime)
         {
@@ -32,14 +33,16 @@ namespace Szeminarium
 
             // set a simulation time
             Time += deltaTime;
+            stopperTime += deltaTime;
 
-            rotationX = (float)(Time * Math.PI / 2f);
-            stopper = (float)(Time * Math.PI / 2f);
+            rotationX = (float)(Time * Math.PI / 2f) * rotationXDirection;
+            stopper = (float)(stopperTime * Math.PI / 2f);
 
             if (stopper > Math.PI / 2f) // ha > 90 fok
             {
                 AnimationEnabled = false;
                 stopper = 0;
+                stopperTime = 0;
             }
         }
     }

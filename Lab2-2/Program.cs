@@ -18,6 +18,7 @@ namespace GrafikaSzeminarium
         private static CameraDescriptor camera = new CameraDescriptor();
 
         private static CubeArrangementModel cubeArrangementModel = new CubeArrangementModel();
+        private static CubeArrangementModel[] cubeArrangementModels = new CubeArrangementModel[26];
 
         private const string ModelMatrixVariableName = "uModel";
         private const string ViewMatrixVariableName = "uView";
@@ -116,6 +117,18 @@ namespace GrafikaSzeminarium
         };
 
 
+        // when button is pressed - bal oldali forgatas
+        private static void rotate(int d)
+        {
+            for(int i=0; i<26; i++)
+            {
+                if (coords[i][0] <= -1)
+                {
+                    cubeArrangementModels[i].AnimationEnabled = true;
+                    cubeArrangementModels[i].rotationXDirection = d;
+                }
+            }
+        }
 
         private static uint program;
 
@@ -157,6 +170,7 @@ namespace GrafikaSzeminarium
             for (int i = 0; i < 26; i++)
             {
                 cubes[i] = ModelObjectDescriptor.CreateCube(Gl, i);
+                cubeArrangementModels[i] = new CubeArrangementModel();
             }
 
             Gl.ClearColor(System.Drawing.Color.White);
@@ -238,15 +252,24 @@ namespace GrafikaSzeminarium
                 case Key.ShiftLeft:
                     camera.MoveDown();
                     break;
+                case Key.B:
+                    rotate(-1);
+                    break;
+                case Key.N:
+                    rotate(1);
+                    break;
             }
         }
 
         private static void GraphicWindow_Update(double deltaTime)
         {
-            // NO OpenGL
-            // make it threadsafe
-            cubeArrangementModel.AdvanceTime(deltaTime);
+            foreach(var cubeModel in cubeArrangementModels)
+            {
+                cubeModel.AdvanceTime(deltaTime);
+            }
         }
+
+        
 
         private static unsafe void GraphicWindow_Render(double deltaTime)
         {
@@ -268,7 +291,11 @@ namespace GrafikaSzeminarium
             for(int i=0; i<26; i++)
             {
                 var translation = Matrix4X4.CreateTranslation(coords[i][0], coords[i][1], coords[i][2]);
-                SetMatrix(translation, ModelMatrixVariableName);
+
+                var rotX = Matrix4X4.CreateRotationX(cubeArrangementModels[i].rotationX);
+                var move = translation * rotX;
+
+                SetMatrix(move, ModelMatrixVariableName);
                 DrawModelObject(cubes[i]);
             }
 
